@@ -22,16 +22,44 @@ is:
 
 ## Using ChemShell on ARCHER2
 
-!!! warning
-    ChemShell is not yet available on ARCHER2
-
 The python-based version of ChemShell is open-source and is freely
 available to all users on ARCHER2.
+
+!!! warning
+    The python-based version of ChemShell is not yet available on ARCHER2
 
 The older version of Tcl-based ChemShell requires a license. Users with
 a valid license should request access via the ARCHER2 SAFE.
 
-## Running parallel ChemShell jobs
+## Running parallel Tcl-ChemShell jobs
 
-!!! note  
-    Information on running ChemShell and example scripts will be added soon.
+The following script will run a TclChemshell job using 1 nodes (128 cores) with pure MPI.
+
+```
+#!/bin/bash
+
+# Slurm job options (job-name, compute nodes, job time)
+#SBATCH --job-name=shells
+#SBATCH --time=0:01:0
+#SBATCH --nodes=1
+#SBATCH --tasks-per-node=128
+#SBATCH --cpus-per-task=1
+
+# Replace [budget code] below with your budget code (e.g. t01)
+#SBATCH --account=[budget code]
+#SBATCH --partition=standard
+#SBATCH --qos=standard
+
+# Setup the job environment (this module needs to be loaded before any other modules)
+
+module restore /etc/cray-pe.d/PrgEnv-gnu
+module load other-software
+module load tcl-chemshell
+
+# Set the number of threads to 1
+#   This prevents any threaded system libraries from automatically
+#   using threading.
+
+export OMP_NUM_THREADS=1
+srun --distribution=block:block --hint=nomultithread chemsh.x input.chm > output.log
+```
