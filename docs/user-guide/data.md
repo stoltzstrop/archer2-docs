@@ -21,6 +21,30 @@ various data storage facilities that are part of the ARCHER2 service.
 This will not only allow you to use the machine more effectively but
 also to ensure that your valuable data is protected.
 
+Here are the main points you should consider:
+
+* **Not all data are created equal, understand your data.** Know what data you have. What is your
+  critical data that needs to be copied to a secure location? Which data do you need in a different
+  location to analyse? Which data would it be easier to regenerate rather than transfer? You should
+  create a brief data management plan laying this out as this will allow you to understand which
+  tools to use and when.
+* **Minimise the data you are transferring.** Transferring large amounts of data is costly in both
+  researcher time and actual time. Make sure you are only transferring the data you need to transfer.
+* **Minimise the number of files you are transferring.** Each individual file has a static overhead in
+  data transfers so it is efficient to bundle multiple files together into a single large
+  archive file for transfer.
+* **Does compression help or hinder?** Many tools have the option to use compression (e.g. `rsync`,
+  `tar`, `zip`) and generally encourage you to use them to reduce data volumes. However, in some cases,
+  the time spent compressing the data can take longer than actually transferring the uncompressed
+  data; particularly when transferring data between two locations that both have large data transfer
+  bandwidth available.
+* **Be aware of encryption overheads.** When transferring data using `scp` (and `rsync` over `scp`)
+  your data will be encrypted introducing a static overhead per file. This issue can be minimised by
+  reducing the number files to be transferred by creating archives. You can also change the encryption
+  algorithm to one that involves minimal encryption. The fastest performing cipher that is commonly 
+  available in SSH at the moment is generally `aes128-ctr` as most common processors provide a
+  hardware implementation.
+
 ## ARCHER2 storage
 
 The ARCHER2 service, like many HPC systems, has a complex structure.
@@ -470,7 +494,7 @@ remote machine onto a local machine.
 
 For example, to transfer files to ARCHER2 from a local machine:
 
-    scp [options] source user@login.archer2.ac.uk:[destination]
+    scp [options] source user@login-4c.archer2.ac.uk:[destination]
 
 (Remember to replace `user` with your ARCHER2 username in the example
 above.)
@@ -486,7 +510,7 @@ If you want to request a different encryption algorithm add the `-c
 (usually faster) *arcfour* encryption algorithm you would
     use:
 
-    scp [options] -c aes128-ctr source user@login.archer2.ac.uk:[destination]
+    scp [options] -c aes128-ctr source user@login-4c.archer2.ac.uk:[destination]
 
 (Remember to replace `user` with your ARCHER2 username in the example
 above.)
@@ -505,7 +529,7 @@ machine.
 To transfer files to ARCHER2 using `rsync` with `ssh` the command has
 the form:
 
-    rsync [options] -e ssh source user@login.archer2.ac.uk:[destination]
+    rsync [options] -e ssh source user@login-4c.archer2.ac.uk:[destination]
 
 (Remember to replace `user` with your ARCHER2 username in the example
 above.)
@@ -520,7 +544,7 @@ Additional flags can be specified for the underlying `ssh` command by
 using a quoted string as the argument of the `-e` flag.
     e.g.
 
-    rsync [options] -e "ssh -c arcfour" source user@login.archer2.ac.uk:[destination]
+    rsync [options] -e "ssh -c arcfour" source user@login-4c.archer2.ac.uk:[destination]
 
 (Remember to replace `user` with your ARCHER2 username in the example
 above.)
@@ -576,7 +600,7 @@ We then initiate the data transfer from our system to ARCHER2, here using
 again, in the event of a loss of connection or other failure. For example, using
 the SSH key in the file `~/.ssh/id_RSA_A2` on our local system:
 
-    rsync -Pv -e"ssh -c aes128-gcm@openssh.com -i $HOME/.ssh/id_RSA_A2" ./all_my_files.tar.gz otbz19@login.archer2.ac.uk:/work/z19/z19/otbz19/
+    rsync -Pv -e"ssh -c aes128-gcm@openssh.com -i $HOME/.ssh/id_RSA_A2" ./all_my_files.tar.gz otbz19@login-4c.archer2.ac.uk:/work/z19/z19/otbz19/
 
 Note the use of the `-P` flag to allow partial transfer -- the same
 command could be used to restart the transfer after a loss of
@@ -594,6 +618,6 @@ ARCHER2.
 If we were unconcerned about being able to restart an interrupted
 transfer, we could instead use the `scp` command,
 
-    scp -c aes128-gcm@openssh.com -i ~/.ssh/id_RSA_A2 all_my_files.tar.gz otbz19@transfer.dyn.archer2.ac.uk:/work/z19/z19/otbz19/
+    scp -c aes128-gcm@openssh.com -i ~/.ssh/id_RSA_A2 all_my_files.tar.gz otbz19@login-4c.archer2.ac.uk:/work/z19/z19/otbz19/
 
 but `rsync` is recommended for larger transfers.
